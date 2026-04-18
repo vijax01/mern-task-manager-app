@@ -1,9 +1,20 @@
+// TaskController.js is meant to do some specific task
+
+// @ import TaskModel if its mongodb and pool if it is postgres 
+// @ db interaction 
+// @ export controller functions from here
+
+
+
+
+
 import TaskModel from "../Models/task.model.js"
 
 
 
 
 
+// define controller functions here and export them 
 export const createTask = async (req, res) => {
      const data = req.body;
      try {

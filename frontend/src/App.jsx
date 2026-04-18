@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { ToastContainer } from 'react-toastify'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css';
 import api from './api'
 import { notify } from './utils/util';
 
@@ -8,7 +10,7 @@ import { notify } from './utils/util';
 
 const App = () => {
 
-
+     const [loading, setLoading] = React.useState(true);
      const [input, setInput] = React.useState('');
      const [tasks, setTasks] = React.useState([]);
      const [copyTasks, setCopyTasks] = React.useState([]);
@@ -77,6 +79,7 @@ const App = () => {
           try {
                const response = await api.get('/tasks');
                const { data } = response.data;
+               setLoading(false);
                setTasks(data);
                setCopyTasks(data);
           } catch (error) {
@@ -88,7 +91,14 @@ const App = () => {
 
      useEffect(() => {
           fetchAllTasks();
+          setLoading(true);
      }, []);
+
+
+     useEffect(() => {
+          fetchAllTasks();
+          setLoading(true);
+     }, [tasks.length]);
 
 
      const handleDeleteTask = async (id) => {
@@ -189,32 +199,42 @@ const App = () => {
 
                     {/* Task List */}
                     <div className='space-y-3'>
-                         {
-                              tasks.map((task) => (
-                                   <div key={task._id} className='flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition'>
+                         {loading && (
+                              <div className='w-full p-2'>
+                                   <Skeleton
+                                        height={60}
+                                        count={4}
+                                        baseColor="#e5e7eb"
+                                        highlightColor="#f3f4f6"
+                                        className='mb-2'
+                                   />
+                              </div>
+                         )}
+                         {(tasks && !loading) && tasks.map((task) => (
+                              <div key={task._id} className='flex items-center justify-between bg-gray-50 px-4 py-3 rounded-lg shadow-sm hover:shadow-md transition'>
 
-                                        <span className={`text-gray-700 ${task.isDone ? 'line-through text-gray-400' : ''}`}>
-                                             {task.taskName}
-                                        </span>
+                                   <span className={`text-gray-700 ${task.isDone ? 'line-through text-gray-400' : ''}`}>
+                                        {task.taskName}
+                                   </span>
 
-                                        {/* Buttons */}
-                                        <div className='flex gap-2'>
+                                   {/* Buttons */}
+                                   <div className='flex gap-2'>
 
-                                             <button onClick={() => handleToggleTaskIsDone(task)} className='cursor-pointer bg-green-500 hover:bg-green-600 text-white p-2 w-10 rounded-lg transition'>
-                                                  ✓
-                                             </button>
+                                        <button onClick={() => handleToggleTaskIsDone(task)} className='cursor-pointer bg-green-500 hover:bg-green-600 text-white p-2 w-10 rounded-lg transition'>
+                                             ✓
+                                        </button>
 
-                                             <button onClick={() => handleUpdateTask(task)} className='cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-2 w-10 rounded-lg transition'>
-                                                  ✎
-                                             </button>
+                                        <button onClick={() => handleUpdateTask(task)} className='cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-2 w-10 rounded-lg transition'>
+                                             ✎
+                                        </button>
 
-                                             <button onClick={() => handleDeleteTask(task._id)} className='cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 w-10 rounded-lg transition'>
-                                                  🗑
-                                             </button>
+                                        <button onClick={() => handleDeleteTask(task._id)} className='cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 w-10 rounded-lg transition'>
+                                             🗑
+                                        </button>
 
-                                        </div>
                                    </div>
-                              ))
+                              </div>
+                         ))
                          }
                     </div>
 
