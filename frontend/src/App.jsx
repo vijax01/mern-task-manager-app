@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react'
 import { ToastContainer } from 'react-toastify'
 import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css';
-import api from './api'
-import { notify } from './utils/util';
+import api from './configs/api.js'
+import { notify } from './utils/toast.js';
 
 
 
@@ -21,49 +21,38 @@ const App = () => {
 
      const handleAddTask = async () => {
 
+          if (input.trim() === '') {
 
-          if (updateTask === '' && input.trim() !== '') {
+               notify('Task cannot be empty', 'error')
+
+          } else if (updateTask === '' && input.trim() !== '') {
                // in this case user is trying to add a new task
                const obj = {
                     taskName: input,
                     isDone: false
                }
-               try {
-                    const response = await api.post('/tasks', obj);
-                    const { success, message } = response.data;
-                    if (success) {
-                         notify(message, 'success');
-                         setInput('');
-                         fetchAllTasks();
-                    } else {
-                         notify(message, 'error');
-                    }
-               } catch (error) {
-                    console.error(error.response?.data?.message || error.message);
-                    notify('Failed to add task', 'error');
-
+               const response = await api.post('/tasks', obj);
+               const { success, message } = response.data;
+               if (success) {
+                    setInput('');
+                    fetchAllTasks();
                }
+
           } else if (updateTask !== '' && input.trim() !== '') {
                // in this case user is trying to update an existing task
                const updatedObj = {
                     taskName: input,
                }
-               try {
-                    const response = await api.put(`/tasks/${updateTaskId}`, updatedObj);
-                    const { success, message } = response.data;
-                    if (success) {
-                         notify(message, 'success');
-                         setInput('');
-                         setUpdateTask('');
-                         setUpdateTaskId('');
-                         fetchAllTasks();
-                    } else {
-                         notify(message, 'error');
-                    }
-               } catch (error) {
-                    console.error(error.response?.data?.message || error.message);
-                    notify('Failed to update task', 'error');
+
+               const response = await api.put(`/tasks/${updateTaskId}`, updatedObj);
+               const { success, message } = response.data;
+               if (success) {
+                    setInput('');
+                    setUpdateTask('');
+                    setUpdateTaskId('');
+                    fetchAllTasks();
                }
+
           }
 
      }
@@ -76,16 +65,13 @@ const App = () => {
 
 
      const fetchAllTasks = async () => {
-          try {
-               const response = await api.get('/tasks');
-               const { data } = response.data;
-               setLoading(false);
-               setTasks(data);
-               setCopyTasks(data);
-          } catch (error) {
-               console.error(error.response?.data?.message || error.message);
-               notify('Failed to fetch tasks', 'error');
-          }
+
+          const response = await api.get('/tasks', { headers: { skipToast: true } });
+          const { data } = response.data;
+          setLoading(false);
+          setTasks(data);
+          setCopyTasks(data);
+
      }
 
 
@@ -95,43 +81,23 @@ const App = () => {
      }, []);
 
 
-     useEffect(() => {
-          fetchAllTasks();
-          setLoading(true);
-     }, [tasks.length]);
-
-
      const handleDeleteTask = async (id) => {
-          try {
-               const response = await api.delete(`/tasks/${id}`);
-               const { success, message } = response.data;
-               if (success) {
-                    notify(message, 'success');
-                    fetchAllTasks();
-               } else {
-                    notify(message, 'error');
-               }
-          } catch (error) {
-               console.error(error.response?.data?.message || error.message);
-               notify('Failed to delete task', 'error');
+          const response = await api.delete(`/tasks/${id}`);
+          const { success, message } = response.data;
+          if (success) {
+               fetchAllTasks();
           }
      }
 
 
      const handleToggleTaskIsDone = async (task) => {
-          try {
-               const response = await api.patch(`/tasks/toggleIsDone/${task._id}`);
-               const { success, message } = response.data;
-               if (success) {
-                    notify(message, 'success');
-                    fetchAllTasks();
-               } else {
-                    notify(message, 'error');
-               }
-          } catch (error) {
-               console.error(error.response?.data?.message || error.message);
-               notify('Failed to toggle task status', 'error');
+
+          const response = await api.patch(`/tasks/toggleIsDone/${task._id}`);
+          const { success, message } = response.data;
+          if (success) {
+               fetchAllTasks();
           }
+
      }
 
 
